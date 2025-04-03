@@ -1,10 +1,9 @@
-// ignore_for_file: use_super_parameters, library_private_types_in_public_api, use_build_context_synchronously, sort_child_properties_last
-
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
 import 'signup_screen.dart';
-import 'account_settings_screen.dart'; // Import the AccountSettingsScreen
+import 'cart_screen.dart'; // Import the CartScreen
+import 'app_drawer.dart'; // Import the AppDrawer widget
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -136,119 +135,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = supabase.auth.currentUser;
 
     return Scaffold(
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Colors.blue,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Frostline Solutions LLC',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  if (_isLoading)
-                    const CircularProgressIndicator(color: Colors.white)
-                  else if (user != null)
-                    Text(
-                      'Welcome $userName',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    )
-                  else
-                    Row(
-                      children: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const LoginScreen()),
-                            );
-                          },
-                          child: const Text(
-                            'Log In',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 20),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const SignUpScreen()),
-                            );
-                          },
-                          child: const Text(
-                            'Sign Up',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  if (user != null)
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: TextButton(
-                        onPressed: _signOut,
-                        child: const Text(
-                          'Log Out',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home, color: Colors.blue),
-              title: const Text(
-                'Home',
-                style: TextStyle(color: Colors.white),
-              ),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
-                );
-              },
-            ),
-            if (user != null) // Show "My Account" button only if user is logged in
-              ListTile(
-                leading: const Icon(Icons.account_circle, color: Colors.blue),
-                title: const Text(
-                  'My Account',
-                  style: TextStyle(color: Colors.white),
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
-                  );
-                },
-              ),
-          ],
-        ),
+      drawer: AppDrawer(
+        userName: userName,
+        isLoading: _isLoading,
+        isUserLoggedIn: user != null,
+        onSignOut: _signOut,
       ),
       appBar: AppBar(
         backgroundColor: Colors.blue,
@@ -258,6 +149,17 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_cart),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CartScreen()),
+              );
+            },
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFF2D2D2D),
       body: Padding(
@@ -405,12 +307,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             onPressed: _isEditingSpecs ? _savePCSpecs : null,
                             icon: const Icon(Icons.settings),
                             label: const Text('Settings'),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              // Navigate to service scheduling page
-                            },
-                            child: const Text('Schedule a Service'),
                           ),
                         ],
                       ),

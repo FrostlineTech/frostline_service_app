@@ -11,8 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  supabase_flutter: ^2.8.4  # Added Supabase dependency
-  flutter_dotenv: ^5.0.2   # Added dotenv dependency
+  supabase_flutter: ^2.8.4  # Supabase dependency
+  flutter_dotenv: ^5.0.2   # dotenv dependency
+  google_sign_in: ^5.0.7   # Google sign-in dependency
+  http: ^0.13.4  # HTTP dependency for making network requests
 
 dev_dependencies:
   flutter_test:
