@@ -16,17 +16,17 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
   final List<Map<String, String>> _services = [
     {
       'title': 'Custom Pc Build',
-      'image': 'assets/logo.png', // Path to the image
-      'description': 'Have Frostline Build a Custom Pc Attuned to your needs and budget. The biggest bang for your buck.'
+      'image': 'assets/logo.png',
+      'description': 'Have Frostline Build a Custom PC Attuned to your needs and budget. The biggest bang for your buck.'
     },
     {
       'title': 'Service 2',
-      'image': 'assets/logo.png', // Path to the image
+      'image': 'assets/logo.png',
       'description': 'Description for Service 2'
     },
     {
       'title': 'Service 3',
-      'image': 'assets/logo.png', // Path to the image
+      'image': 'assets/logo.png',
       'description': 'Description for Service 3'
     },
   ];
@@ -54,7 +54,7 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
             // Notes input
             TextField(
               controller: _noteController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Additional Notes',
                 border: OutlineInputBorder(),
               ),
@@ -86,33 +86,43 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    if (picked != null && picked != _selectedDate) {
+
+    if (picked != null) {
       setState(() {
         _selectedDate = picked;
       });
 
-      // After selecting a date, schedule the service
+      // Schedule the service after date selection
       _scheduleService(serviceTitle, _selectedDate!, _noteController.text);
     }
   }
 
   Future<void> _scheduleService(String serviceTitle, DateTime date, String notes) async {
     final user = Supabase.instance.client.auth.currentUser;
-    
+
     if (user != null) {
       try {
+        await Supabase.instance.client.from('appointments').insert({
+          'user_id': user.id,
+          'service_title': serviceTitle,
+          'scheduled_date': date.toIso8601String(),
+          'notes': notes,
+          'created_at': DateTime.now().toIso8601String(),
+        });
 
+        // Success message
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Service scheduled successfully!')),
+          const SnackBar(content: Text('Service scheduled successfully!')),
         );
       } catch (error) {
+        // Catch and display any errors
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to schedule service: $error')),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please log in to schedule a service')),
+        const SnackBar(content: Text('Please log in to schedule a service')),
       );
     }
   }
@@ -179,8 +189,8 @@ class ServiceCard extends StatelessWidget {
                 onPressed: onSchedulePressed,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  backgroundColor: Colors.blue, // Blue button
-                  foregroundColor: Colors.white, // White text
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
                 ),
                 child: const Text('Schedule'),
               ),
