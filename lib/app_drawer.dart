@@ -1,11 +1,12 @@
 // app_drawer.dart
+
 import 'package:flutter/material.dart';
-import 'home_screen.dart'; // Update the imports as necessary
+import 'home_screen.dart';
 import 'login_screen.dart';
 import 'signup_screen.dart';
 import 'account_settings_screen.dart';
-import 'merchandise_screen.dart';
 import 'schedule_service_screen.dart';
+import 'service_tracking_screen.dart'; // Import ServiceTrackingScreen
 
 class AppDrawer extends StatelessWidget {
   final String userName;
@@ -135,15 +136,16 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.store, color: Colors.blue),
+            leading: const Icon(Icons.track_changes, color: Colors.blue), // Icon for tracking
             title: const Text(
-              'Merchandise',
+              'Service Tracking',
               style: TextStyle(color: Colors.white),
             ),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MerchandiseScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const ServiceTrackingScreen()),
               );
             },
           ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'login_screen.dart';
 import 'signup_screen.dart';
-import 'cart_screen.dart'; // Import the CartScreen
 import 'app_drawer.dart'; // Import the AppDrawer widget
 
 class HomeScreen extends StatefulWidget {
@@ -21,7 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final _processorController = TextEditingController();
   final _ramController = TextEditingController();
   final _gpuController = TextEditingController();
-  bool _isEditingSpecs = false;  // Track whether the user is editing the specs
+  bool _isEditingSpecs = false; // Track whether the user is editing the specs
+  bool _isExpanded = false; // Track if the ExpansionTile is expanded
 
   @override
   void initState() {
@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchPCSpecs() async {
     final user = supabase.auth.currentUser;
-    if (user == null) return;  // No user is logged in, so no PC specs
+    if (user == null) return; // No user is logged in, so no PC specs
 
     try {
       final response = await supabase
@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _savePCSpecs() async {
     final user = supabase.auth.currentUser;
-    if (user == null) return;  // No user is logged in, so don't save PC specs
+    if (user == null) return; // No user is logged in, so don't save PC specs
 
     try {
       await supabase.from('pc_specs').upsert({
@@ -96,10 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
         'processor': _processorController.text,
         'ram': _ramController.text,
         'gpu': _gpuController.text,
-      });
+      }, onConflict: 'user_id');  // Corrected from List<String> to a single string
 
       setState(() {
-        _isEditingSpecs = false;  // Disable editing after saving
+        _isEditingSpecs = false; // Disable editing after saving
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -149,17 +149,6 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const CartScreen()),
-              );
-            },
-          ),
-        ],
       ),
       backgroundColor: const Color(0xFF2D2D2D),
       body: Padding(
@@ -245,72 +234,70 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  GestureDetector(
-                    onTap: () {
+                  
+                  // My PC ExpansionTile with settings cogwheel moved to the right
+                  ExpansionTile(
+                    title: const Text(
+                      'My PC',
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                    trailing: Icon(
+                      _isExpanded
+                          ? Icons.arrow_drop_up
+                          : Icons.arrow_drop_down,
+                      color: Colors.white,
+                    ),
+                    onExpansionChanged: (bool expanded) {
                       setState(() {
-                        _isEditingSpecs = !_isEditingSpecs;
+                        _isExpanded = expanded; // Update the expansion state
                       });
                     },
-                    child: Container(
-                      padding: const EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                        color: Colors.blueGrey,
-                        borderRadius: BorderRadius.circular(8.0),
+                    children: [
+                      // Settings cogwheel button positioned to the right
+                      ListTile(
+                        trailing: const Icon(Icons.settings, color: Colors.white),
+                        onTap: () {
+                          setState(() {
+                            _isEditingSpecs = !_isEditingSpecs;
+                          });
+                        },
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'My PC',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white,
+                      if (_isEditingSpecs)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextField(
+                              controller: _processorController,
+                              decoration: const InputDecoration(labelText: 'Processor'),
+                              style: const TextStyle(color: Colors.white),
                             ),
-                          ),
-                          if (_isEditingSpecs)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                TextField(
-                                  controller: _processorController,
-                                  decoration: const InputDecoration(labelText: 'Processor'),
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                TextField(
-                                  controller: _ramController,
-                                  decoration: const InputDecoration(labelText: 'RAM'),
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                TextField(
-                                  controller: _gpuController,
-                                  decoration: const InputDecoration(labelText: 'GPU'),
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                const SizedBox(height: 10),
-                                ElevatedButton(
-                                  onPressed: _savePCSpecs,
-                                  child: const Text('Save Specs'),
-                                ),
-                              ],
-                            )
-                          else
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Processor: ${_processorController.text}'),
-                                Text('RAM: ${_ramController.text}'),
-                                Text('GPU: ${_gpuController.text}'),
-                              ],
+                            TextField(
+                              controller: _ramController,
+                              decoration: const InputDecoration(labelText: 'RAM'),
+                              style: const TextStyle(color: Colors.white),
                             ),
-                          const SizedBox(height: 10),
-                          ElevatedButton.icon(
-                            onPressed: _isEditingSpecs ? _savePCSpecs : null,
-                            icon: const Icon(Icons.settings),
-                            label: const Text('Settings'),
-                          ),
-                        ],
-                      ),
-                    ),
+                            TextField(
+                              controller: _gpuController,
+                              decoration: const InputDecoration(labelText: 'GPU'),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: _savePCSpecs,
+                              child: const Text('Save Specs'),
+                            ),
+                          ],
+                        )
+                      else
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Processor: ${_processorController.text}', style: const TextStyle(color: Colors.white)),
+                            Text('RAM: ${_ramController.text}', style: const TextStyle(color: Colors.white)),
+                            Text('GPU: ${_gpuController.text}', style: const TextStyle(color: Colors.white)),
+                          ],
+                        ),
+                    ],
                   ),
                 ],
               ),
