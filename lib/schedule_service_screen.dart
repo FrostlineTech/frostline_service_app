@@ -101,14 +101,6 @@ class _ScheduleServiceScreenState extends State<ScheduleServiceScreen> {
     
     if (user != null) {
       try {
-        final response = await Supabase.instance.client
-            .from('appointments')
-            .insert({
-              'user_id': user.id,
-              'service': serviceTitle,
-              'date': date.toIso8601String(),
-              'notes': notes,
-            });
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Service scheduled successfully!')),
